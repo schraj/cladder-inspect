@@ -109,6 +109,22 @@ No samples errored in either run. `gpt-6-luna` gave 115 final answers (1.1%)
 that were neither yes nor no (for example "Cannot determine"); these score as
 incorrect.
 
+### Comparison with the paper
+
+Table 2 of the paper (arXiv v3) reports these results on the same v1.5 set,
+at temperature 0:
+
+| Model (paper)                         | Accuracy | Rung 1 | Rung 2 | Rung 3 |
+| ------------------------------------- | -------- | ------ | ------ | ------ |
+| Random                                | 0.493    | 0.503  | 0.484  | 0.491  |
+| GPT-3.5                               | 0.522    | 0.518  | 0.548  | 0.503  |
+| GPT-4 (`gpt-4-1106-preview`), direct  | 0.620    | 0.630  | 0.628  | 0.606  |
+| GPT-4 + CausalCoT                     | 0.704    | 0.834  | 0.675  | 0.621  |
+
+The models in the paper are no longer the current ones, so this
+implementation has not been checked by reproducing a paper number with the
+same model. The paper does not report accuracy by query type.
+
 ### Effect of prompting mode and reasoning
 
 On a fixed random sample of 200 questions (`--limit 200 --sample-shuffle 42`):
@@ -134,6 +150,31 @@ the opposite action. Their labels agree with the reference derivation only if
 the question is read as "had not". `claude-haiku-5-5` scores 0.232 on these 69
 and 0.879 on the other 1,195 `ett` questions. This has not been confirmed
 with the dataset authors.
+
+### Ambiguous wording in `collider_bias` questions
+
+All 158 `collider_bias` questions use the graph X -> V3 <- Y and come in two
+forms: 79 ask "does it mean that X affects Y?" (label "no") and 79 ask "does
+it mean that X does not affect Y?" (label "yes"). `claude-haiku-5-5` answers
+"no" to 157 of the 158, which gives 0.506: every un-negated question right
+and 78 of the 79 negated questions wrong.
+
+The low score reflects how the negated question is read, not a failure to
+recognise collider bias. In all 78 wrong transcripts the reasoning turn both
+names the collider (or selection) mechanism and states that X has no causal
+effect on Y, by keyword match over the full text. The conclusions of 15 of
+them, read by hand, fall into two groups:
+
+- The model answers the un-negated question: "No. The correlation ... does
+  not imply that X affects Y ... the true causal effect is zero."
+- The model reads the negated question literally: "No. ... 'X does not affect
+  Y' is true in this hypothetical world, but it cannot be inferred from the
+  conditional correlation alone; it follows from the graph structure."
+
+Both state the fact the "yes" label encodes and still answer "No". The one
+negated question scored correct has the same reasoning, with "No" in the
+reasoning turn and "Yes" in the final one-word turn. `gpt-6-luna` answers
+"yes" to 41 of the 79 negated questions and "no" to all 79 of the others.
 
 ## Development
 
