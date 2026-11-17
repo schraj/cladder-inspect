@@ -140,16 +140,24 @@ answer to start with "Yes" or "No", so the model commits before working the
 problem out, and some transcripts reverse the opening word later in the text.
 The scorer reads only the opening word, as the original does.
 
-### Possible label errors
+### Question-text error in 69 `ett` questions
 
-69 `ett` questions in the `firing_employee` and `vaccine_kills` stories ask
-about the action that was already taken ("For managers who sign termination
-letters, would it be more likely to see employee being fired if the manager
-had signed the termination letter?"), where other `ett` questions ask about
-the opposite action. Their labels agree with the reference derivation only if
-the question is read as "had not". `claude-haiku-5-5` scores 0.232 on these 69
-and 0.879 on the other 1,195 `ett` questions. This has not been confirmed
-with the dataset authors.
+69 `ett` questions ask about the action that was already taken: 40 in the
+`firing_employee` story ("For managers who sign termination letters, would it
+be more likely to see employee being fired if the manager had signed the
+termination letter?") and 29 in `vaccine_kills` ("... if the person had been
+vaccinated?"). Every other `ett` question asks about the opposite action
+("if the person had not visited England?").
+
+The labels were checked against the sign of the effect in each question's
+reference derivation. For 66 of the 69 the label is the answer to the "had
+not" version of the question (the other 3 have an effect of exactly zero),
+the same rule that holds for the rest of the `ett` questions. So the word
+"not" is missing from the question text, and as written these questions are
+labelled the opposite of the natural reading. `claude-haiku-5-5` scores 0.232
+on these 69 and 0.879 on the other 1,195 `ett` questions; `gpt-6-luna` scores
+0.304 and 0.502. This has not been reported to or confirmed by the dataset
+authors.
 
 ### Ambiguous wording in `collider_bias` questions
 
